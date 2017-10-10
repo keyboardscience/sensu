@@ -13,5 +13,8 @@ module Sensu
 
     # Process signals that trigger a Sensu process stop.
     STOP_SIGNALS = %w[INT TERM].freeze
+
+    # Process signals that trigger a configuration reload
+    RELOAD_SIGNALS = %w[USR2].freeze
   end
 end

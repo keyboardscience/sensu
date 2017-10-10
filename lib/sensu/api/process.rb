@@ -50,6 +50,16 @@ module Sensu
         super
       end
 
+      def reload
+        @logger.warn("reloading")
+        @settings = Settings.load(@daemon_options)
+        @logger.warn("reconnecting to redis and transport")
+        @redis.close if @redis
+        @transport.close if @transport
+        setup_redis
+        setup_transport
+      end
+
       # Stop the Sensu API process. This method stops the HTTP server,
       # closes the Redis and transport connections, sets the service
       # state to `:stopped`, and stops the EventMachine event loop.

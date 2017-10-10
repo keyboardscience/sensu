@@ -65,7 +65,7 @@ module Sensu
             @in_progress[:check_results] = 0
           end
           setup_transport do
-            yield
+            yield if block_given?
           end
         end
       end
@@ -1503,6 +1503,25 @@ module Sensu
         setup_connections do
           bootstrap
           yield if block_given?
+        end
+      end
+
+      def reload
+        @logger.warn("reloading")
+        super
+        @logger.debug("reload - refresh configuration")
+        @settings = Settings.load(@daemon_options)
+        @logger.debug("reload - waiting for connections to drain from datastore and transport")
+        complete_in_progress do
+          @logger.debug("reload - connections drained, pausing")
+          pause
+          @logger.debug("reload - closing datastore and transport objects")
+          @redis.close if @redis
+          @transport.close if @transport
+          @logger.debug("reload - datastore and trasport closed, resuming")
+          setup_connections
+          resume
+          @logger.debug("reload - resumed")
         end
       end
 

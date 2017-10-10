@@ -32,6 +32,18 @@ module Sensu
         opts.on("-d", "--config_dir DIR[,DIR]", "DIR or comma-delimited DIR list for Sensu JSON config files. Default: /etc/sensu/conf.d (if exists)") do |dir|
           options[:config_dirs] = dir.split(",")
         end
+        opts.on("--config_kv_type [etcd|consul]", "Key-value store type to read configuration from") do |kv_type|
+          options[:kv_type] = kv_type
+        end
+        opts.on("--config_kv_url KV_URL", "Key-value store URL to read configuration from") do |kv_url|
+          options[:kv_url] = kv_url
+        end
+        opts.on("--config_kv_root KV_ROOT", "Key-value root path for configuration") do |kv_chroot|
+          options[:kv_chroot] = kv_chroot
+        end
+        opts.on("--config_kv_auth KV_AUTH", "Key-value store authentication") do |kv_auth|
+          options[:kv_auth] = kv_auth
+        end
         opts.on("--validate_config", "Validate the compiled configuration and exit") do
           options[:validate_config] = true
         end

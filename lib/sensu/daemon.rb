@@ -4,7 +4,7 @@ gem "eventmachine", "1.2.5"
 
 gem "sensu-json", "2.1.0"
 gem "sensu-logger", "1.2.1"
-gem "sensu-settings", "10.9.0"
+gem "sensu-settings", "10.10.0"
 gem "sensu-extension", "1.5.1"
 gem "sensu-extensions", "1.9.0"
 gem "sensu-transport", "7.0.2"
@@ -45,6 +45,7 @@ module Sensu
     #
     # @param options [Hash]
     def initialize(options={})
+      @daemon_options = options
       @start_time = Time.now.to_i
       @state = :initializing
       @timers = {:run => []}
@@ -195,6 +196,10 @@ module Sensu
       yield if block_given?
     end
 
+    def reload
+      @state = :reloading
+    end
+
     # Pause the Sensu service and set the service state to `:paused`.
     # This method will likely be overridden by a subclass.
     def pause
@@ -228,10 +233,19 @@ module Sensu
           @signals << signal
         end
       end
+      RELOAD_SIGNALS.each do |signal|
+        Signal.trap(signal) do
+          @signals << signal
+        end
+      end
       EM::PeriodicTimer.new(1) do
         signal = @signals.shift
+        if RELOAD_SIGNALS.include?(signal)
+          @logger.warn("received reload signal", :signal => signal)
+          reload
+        end
         if STOP_SIGNALS.include?(signal)
-          @logger.warn("received signal", :signal => signal)
+          @logger.warn("received stop signal", :signal => signal)
           stop
         end
       end
